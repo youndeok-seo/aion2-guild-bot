@@ -2,9 +2,10 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import httpx
+import os
 
 
-API_BASE = "http://localhost:8000"
+API_BASE = f"http://localhost:{os.getenv('PORT', '8000')}"
 
 
 class RankingCog(commands.Cog):
