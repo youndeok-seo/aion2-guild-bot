@@ -2,6 +2,7 @@ FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y \
     fonts-nanum \
+    fontconfig \
     && fc-cache -fv \
     && rm -rf /var/lib/apt/lists/*
 
