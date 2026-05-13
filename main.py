@@ -51,8 +51,6 @@ async def main():
         print("❌ DISCORD_BOT_TOKEN 환경변수가 없습니다")
         raise ValueError("DISCORD_BOT_TOKEN 환경변수가 설정되지 않았습니다")
 
-    print(f"🔑 토큰 확인: {token[:10]}...")
-
     await asyncio.gather(
         run_bot(token),
         run_api()
