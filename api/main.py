@@ -18,6 +18,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan, title="아이온2 길드 봇 API")
 
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
 def get_db():
     db = SessionLocal()
     try:
