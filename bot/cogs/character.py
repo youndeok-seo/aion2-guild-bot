@@ -82,8 +82,9 @@ class CharacterCog(commands.Cog):
         self.bot = bot
         self.http = httpx.AsyncClient()
 
-    @app_commands.command(name="등록", description="길드원 캐릭터를 등록합니다")
+    @app_commands.command(name="등록", description="길드원 캐릭터를 등록합니다 (관리자 전용)")
     @app_commands.describe(url="캐릭터 정보실 URL")
+    @app_commands.default_permissions(administrator=True)
     async def register(self, interaction: discord.Interaction, url: str):
         await interaction.response.defer()
 
