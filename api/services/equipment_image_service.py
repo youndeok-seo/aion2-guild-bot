@@ -4,14 +4,14 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 
 # ── 레이아웃 ─────────────────────────────────────────────
-IMG_W     = 580
-TITLE_H   = 38
-ROW_H     = 64
-ICON_SIZE = 46
-ICON_X    = 10
-TEXT_X    = ICON_X + ICON_SIZE + 10   # 66
-SKIN_SIZE = 46
-SKIN_X    = IMG_W - 10 - SKIN_SIZE    # 524
+IMG_W     = 900
+TITLE_H   = 52
+ROW_H     = 86
+ICON_SIZE = 64
+ICON_X    = 12
+TEXT_X    = ICON_X + ICON_SIZE + 14   # 90
+SKIN_SIZE = 60
+SKIN_X    = IMG_W - 12 - SKIN_SIZE    # 828
 
 # ── 색상 ─────────────────────────────────────────────────
 BG         = (20, 20, 26)
@@ -100,9 +100,9 @@ async def generate_equipment_image(equipment: list) -> bytes:
             asyncio.gather(*[_fetch(client, u) for u in skin_urls]),
         )
 
-    f_title = _load_font(15)
-    f_name  = _load_font(15)
-    f_badge = _load_font(10)
+    f_title = _load_font(22)
+    f_name  = _load_font(20)
+    f_badge = _load_font(14)
 
     total_h = TITLE_H + len(ordered) * ROW_H
     img  = Image.new("RGB", (IMG_W, total_h), BG)
@@ -110,7 +110,7 @@ async def generate_equipment_image(equipment: list) -> bytes:
 
     # 타이틀 바
     draw.rectangle([0, 0, IMG_W - 1, TITLE_H - 1], fill=TITLE_BG)
-    draw.text((12, (TITLE_H - 15) // 2), "장비", fill=TITLE_CLR, font=f_title)
+    draw.text((16, (TITLE_H - 22) // 2), "장비", fill=TITLE_CLR, font=f_title)
 
     for idx, item in enumerate(ordered):
         row_y  = TITLE_H + idx * ROW_H
@@ -128,16 +128,16 @@ async def generate_equipment_image(equipment: list) -> bytes:
                            fill=(40, 40, 50), outline=(60, 60, 75))
 
         gc     = GRADE_CLR.get(item["grade"], (180, 180, 180))
-        text_y = row_y + (ROW_H - 18) // 2
+        text_y = row_y + (ROW_H - 20) // 2
         tx     = TEXT_X
 
         # 초월 뱃지
         exceed = item.get("exceed", 0)
         if exceed:
-            badge_cx = tx + 9
-            badge_cy = text_y + 9
+            badge_cx = tx + 12
+            badge_cy = text_y + 10
             _draw_badge(draw, badge_cx, badge_cy, exceed, f_badge)
-            tx += 22
+            tx += 30
 
         # 강화 레벨 (+20)
         enchant = item.get("enchant", 0)

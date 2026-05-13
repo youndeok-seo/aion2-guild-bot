@@ -225,12 +225,10 @@ class CharacterCog(commands.Cog):
                 if extra:
                     embed2.add_field(name="🐾 펫 / 날개", value="\n".join(extra), inline=False)
 
+                await interaction.followup.send(embed=embed2)
                 if img_res.status_code == 200:
                     img_file = discord.File(io.BytesIO(img_res.content), filename="equipment.png")
-                    embed2.set_image(url="attachment://equipment.png")
-                    await interaction.followup.send(embed=embed2, file=img_file)
-                else:
-                    await interaction.followup.send(embed=embed2)
+                    await interaction.followup.send(file=img_file)
         except Exception as e:
             await interaction.followup.send(f"❌ 오류: {str(e)}")
 
