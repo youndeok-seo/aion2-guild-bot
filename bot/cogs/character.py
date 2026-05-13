@@ -202,15 +202,35 @@ class CharacterCog(commands.Cog):
             # ── 메시지 1: 캐릭터 정보 ──
             await interaction.followup.send(embed=embed1)
 
-            # ── 메시지 2: 장비 이미지 ──
-            if img_res.status_code == 200:
-                img_file = discord.File(
-                    io.BytesIO(img_res.content),
-                    filename="equipment.png"
-                )
-                embed2 = discord.Embed(title="🗡️ 장비", color=color)
-                embed2.set_image(url="attachment://equipment.png")
-                await interaction.followup.send(embed=embed2, file=img_file)
+            # ── 메시지 2: 장비 텍스트 + 이미지 ──
+            if equip_res.status_code == 200:
+                edata = equip_res.json()
+                items_by_slot = {item["slot"]: item for item in edata["equipment"]}
+
+                embed2 = discord.Embed(title="🗡️ 장비 정보", color=color)
+                embed2.add_field(name="⚔️ 무기", value=build_slot_text(items_by_slot, WEAPON_SLOTS), inline=False)
+                embed2.add_field(name="🛡️ 방어구", value=build_slot_text(items_by_slot, ARMOR_SLOTS), inline=False)
+                embed2.add_field(name="💍 장신구", value=build_slot_text(items_by_slot, ACC_SLOTS), inline=False)
+                embed2.add_field(name="🃏 아르카나", value=build_slot_text(items_by_slot, ARCANA_SLOTS), inline=False)
+
+                extra = []
+                if edata.get("pet"):
+                    extra.append(f"🐾 펫: **{edata['pet']['name']}** Lv.{edata['pet']['level']}")
+                if edata.get("wing"):
+                    w = edata["wing"]
+                    extra.append(f"🪶 날개: {GRADE_EMOJI.get(w['grade'], '⬜')} {w['name']} +{w['enchant']}")
+                if edata.get("wing_skin"):
+                    ws = edata["wing_skin"]
+                    extra.append(f"✨ 날개 외형: {GRADE_EMOJI.get(ws['grade'], '⬜')} {ws['name']}")
+                if extra:
+                    embed2.add_field(name="🐾 펫 / 날개", value="\n".join(extra), inline=False)
+
+                if img_res.status_code == 200:
+                    img_file = discord.File(io.BytesIO(img_res.content), filename="equipment.png")
+                    embed2.set_image(url="attachment://equipment.png")
+                    await interaction.followup.send(embed=embed2, file=img_file)
+                else:
+                    await interaction.followup.send(embed=embed2)
         except Exception as e:
             await interaction.followup.send(f"❌ 오류: {str(e)}")
 
