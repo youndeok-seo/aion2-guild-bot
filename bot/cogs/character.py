@@ -199,8 +199,10 @@ class CharacterCog(commands.Cog):
 
             embed1.set_footer(text="NCSOFT 공식 캐릭터 정보실  |  등급: 🟠전설 🟣에픽 🔵유니크 ⚪스페셜")
 
-            # ── 임베드 2: 장비 이미지 ──
-            embeds = [embed1]
+            # ── 메시지 1: 캐릭터 정보 ──
+            await interaction.followup.send(embed=embed1)
+
+            # ── 메시지 2: 장비 이미지 ──
             if img_res.status_code == 200:
                 img_file = discord.File(
                     io.BytesIO(img_res.content),
@@ -208,11 +210,7 @@ class CharacterCog(commands.Cog):
                 )
                 embed2 = discord.Embed(title="🗡️ 장비", color=color)
                 embed2.set_image(url="attachment://equipment.png")
-                embeds.append(embed2)
-                await interaction.followup.send(embeds=embeds, files=[img_file])
-                return
-
-            await interaction.followup.send(embeds=embeds)
+                await interaction.followup.send(embed=embed2, file=img_file)
         except Exception as e:
             await interaction.followup.send(f"❌ 오류: {str(e)}")
 
