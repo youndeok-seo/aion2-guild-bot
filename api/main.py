@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 
@@ -50,25 +51,34 @@ async def register_member(
     if existing:
         raise HTTPException(409, "이미 등록된 캐릭터입니다")
 
-    member = GuildMember(
-        discord_id=discord_id,
-        character_name=profile["characterName"],
-        character_id=character_id,
-        server_id=server_id,
-        server_name=profile["serverName"],
-        class_name=profile["className"],
-        race_name=profile["raceName"],
-    )
-    db.add(member)
-    db.flush()
+    if discord_id:
+        existing_discord = db.query(GuildMember).filter_by(discord_id=discord_id).first()
+        if existing_discord:
+            raise HTTPException(409, f"이미 '{existing_discord.character_name}' 캐릭터로 등록되어 있습니다")
 
-    history = CombatPowerHistory(
-        member_id=member.id,
-        combat_power=profile["combatPower"],
-        level=profile["characterLevel"],
-    )
-    db.add(history)
-    db.commit()
+    try:
+        member = GuildMember(
+            discord_id=discord_id,
+            character_name=profile["characterName"],
+            character_id=character_id,
+            server_id=server_id,
+            server_name=profile["serverName"],
+            class_name=profile["className"],
+            race_name=profile["raceName"],
+        )
+        db.add(member)
+        db.flush()
+
+        history = CombatPowerHistory(
+            member_id=member.id,
+            combat_power=profile["combatPower"],
+            level=profile["characterLevel"],
+        )
+        db.add(history)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(409, "이미 등록된 계정 또는 캐릭터입니다")
 
     return {"status": "ok", "character": profile["characterName"]}
 
