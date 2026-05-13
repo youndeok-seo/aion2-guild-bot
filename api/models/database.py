@@ -12,7 +12,7 @@ class GuildMember(Base):
     __tablename__ = "guild_members"
 
     id = Column(Integer, primary_key=True)
-    discord_id = Column(String(50), unique=True, nullable=True)
+    discord_id = Column(String(50), nullable=True)
     character_name = Column(String(50), nullable=False)
     character_id = Column(String(100), unique=True, nullable=False)
     server_id = Column(Integer, nullable=False)
