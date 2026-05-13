@@ -32,16 +32,29 @@ async def run_api():
     await server.serve()
 
 
+async def run_bot(token: str):
+    try:
+        print("🔄 디스코드 봇 연결 시도 중...")
+        await bot.start(token)
+    except discord.errors.LoginFailure as e:
+        print(f"❌ 봇 로그인 실패 (토큰 오류): {e}")
+    except Exception as e:
+        print(f"❌ 봇 오류: {type(e).__name__}: {e}")
+
+
 async def main():
     start_scheduler()
     print("✅ 스케줄러 시작")
 
     token = os.getenv("DISCORD_BOT_TOKEN")
     if not token:
+        print("❌ DISCORD_BOT_TOKEN 환경변수가 없습니다")
         raise ValueError("DISCORD_BOT_TOKEN 환경변수가 설정되지 않았습니다")
 
+    print(f"🔑 토큰 확인: {token[:10]}...")
+
     await asyncio.gather(
-        bot.start(token),
+        run_bot(token),
         run_api()
     )
 
