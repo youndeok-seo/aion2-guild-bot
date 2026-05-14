@@ -297,5 +297,23 @@ class CharacterCog(commands.Cog):
             await interaction.followup.send(f"❌ 오류: {str(e)}")
 
 
+    @app_commands.command(name="탈퇴", description="등록된 캐릭터를 삭제합니다 (관리자 전용)")
+    @app_commands.describe(캐릭터명="삭제할 캐릭터 이름")
+    @app_commands.default_permissions(administrator=True)
+    async def unregister(self, interaction: discord.Interaction, 캐릭터명: str):
+        await interaction.response.defer()
+        try:
+            response = await self.http.delete(f"{API_BASE}/members/{캐릭터명}")
+            if response.status_code == 200:
+                await interaction.followup.send(f"✅ **{캐릭터명}** 캐릭터가 삭제되었습니다.")
+            elif response.status_code == 404:
+                await interaction.followup.send(f"❌ 등록되지 않은 캐릭터입니다: {캐릭터명}")
+            else:
+                detail = response.json().get("detail", "삭제 실패")
+                await interaction.followup.send(f"⚠️ {detail}")
+        except Exception as e:
+            await interaction.followup.send(f"❌ 오류: {str(e)}")
+
+
 async def setup(bot):
     await bot.add_cog(CharacterCog(bot))

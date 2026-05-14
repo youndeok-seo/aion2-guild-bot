@@ -8,6 +8,7 @@ from .models.database import SessionLocal, GuildMember, CombatPowerHistory, init
 from .services.ncsoft_client import get_ncsoft_client
 from .services.chart_service import generate_combat_power_chart
 from .services.equipment_image_service import generate_equipment_image
+from .services.guild_status_image_service import generate_guild_status_image
 
 
 @asynccontextmanager
@@ -172,6 +173,39 @@ async def get_guild_ranking(db: Session = Depends(get_db)):
 
     rankings.sort(key=lambda x: x["combat_power"], reverse=True)
     return rankings
+
+
+@app.get("/guild/status/image")
+async def get_guild_status_image(db: Session = Depends(get_db)):
+    members = db.query(GuildMember).all()
+
+    rows = []
+    for member in members:
+        last = db.query(CombatPowerHistory).filter_by(member_id=member.id)\
+            .order_by(CombatPowerHistory.recorded_at.desc()).first()
+        if last:
+            rows.append({
+                "name":         member.character_name,
+                "class":        member.class_name,
+                "combat_power": last.combat_power,
+                "item_level":   last.item_level,
+                "level":        last.level,
+                "updated_at":   last.recorded_at.isoformat(),
+            })
+
+    rows.sort(key=lambda x: x["combat_power"], reverse=True)
+    img_bytes = generate_guild_status_image(rows)
+    return Response(content=img_bytes, media_type="image/png")
+
+
+@app.delete("/members/{character_name}")
+async def delete_member(character_name: str, db: Session = Depends(get_db)):
+    member = db.query(GuildMember).filter_by(character_name=character_name).first()
+    if not member:
+        raise HTTPException(404, f"등록되지 않은 캐릭터: {character_name}")
+    db.delete(member)
+    db.commit()
+    return {"status": "ok", "character": character_name}
 
 
 def _build_equipment_data(data: dict) -> tuple[list, dict]:

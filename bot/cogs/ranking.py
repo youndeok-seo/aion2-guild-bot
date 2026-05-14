@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import httpx
+import io
 import os
 
 
@@ -39,6 +40,21 @@ class RankingCog(commands.Cog):
         embed.set_footer(text=f"총 {len(rankings)}명")
 
         await interaction.followup.send(embed=embed)
+
+    @app_commands.command(name="현황", description="길드 전체 현황을 표 이미지로 표시합니다")
+    async def status(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+        try:
+            response = await self.http.get(f"{API_BASE}/guild/status/image", timeout=30.0)
+            if response.status_code != 200:
+                await interaction.followup.send("❌ 현황 이미지 생성 실패")
+                return
+
+            file = discord.File(io.BytesIO(response.content), filename="guild_status.png")
+            await interaction.followup.send(file=file)
+        except Exception as e:
+            await interaction.followup.send(f"❌ 오류: {str(e)}")
 
 
 async def setup(bot):
